@@ -26,16 +26,15 @@ extern "C"
 	}
 	__declspec(dllexport) void OnFrame()
 	{
-		for (uint8_t i = 1; i < 4; i++)
+		for (uint8_t i = 0; i < 4; i++)
 		{
-			if (GetCharObj2(i) != nullptr && ControllersRaw[i].HeldButtons & Buttons_D)
+			if (GetCharObj2(i) != nullptr && ControllersRaw[i].HeldButtons & Buttons_C)
 			{
-				if ((ControllersRaw[i].HeldButtons & (Buttons_Up | Buttons_Down | Buttons_Left | Buttons_Right)) == 0)
+				int buttons = ControllersRaw[i].PressedButtons;
+
+				if ((buttons & (Buttons_Up | Buttons_Down | Buttons_Left | Buttons_Right)) == 0)
 					continue;
 
-				CharObj1Ptrs[i]->Position = CharObj1Ptrs[0]->Position;
-
-				int buttons = ControllersRaw[i].HeldButtons;
 				int x = 0;
 
 				if (buttons & Buttons_Up)
@@ -47,34 +46,49 @@ extern "C"
 				else if (buttons & Buttons_Right)
 					x = 3;
 
+				if (CharObj1Ptrs[x] != nullptr)
+				{
+					CharObj1Ptrs[i]->Position = CharObj1Ptrs[x]->Position;
+					CharObj1Ptrs[i]->Rotation = CharObj1Ptrs[x]->Rotation;
+					CharObj2Ptrs[i]->HSpeed = 0;
+					CharObj2Ptrs[i]->VSpeed = 0;
+
+					CharObj1Ptrs[i]->Action = 0;
+					CharObj1Ptrs[i]->Status &= ~Status_Attack;
+				}
+
 				continue;
 			}
+
+			if (i == 0)
+				continue;
 
 			if (ControllersRaw[i].HeldButtons & Buttons_Y && GetCharObj2(i) == nullptr)
 			{
 				void(__cdecl* loadSub)(ObjectMaster*);
 				uint8_t charid = 0;
 				int buttons = ControllersRaw[i].PressedButtons;
+				bool alt = (ControllersRaw[i].HeldButtons & Buttons_Z) != 0;
 
 				if (buttons & Buttons_Up)
 				{
-					loadSub = Sonic_Main;
-					charid = Characters_Sonic;
+					loadSub = (alt) ? Big_Main : Sonic_Main;
+					charid = (alt) ? Characters_Big : Characters_Sonic;
 				}
 				else if (buttons & Buttons_Down)
 				{
-					loadSub = Tails_Main;
-					charid = Characters_Tails;
+					loadSub = (alt) ? Gamma_Main : Tails_Main;
+					charid = (alt) ? Characters_Gamma : Characters_Tails;
 				}
 				else if (buttons & Buttons_Left)
 				{
-					loadSub = Knuckles_Main;
-					charid = Characters_Knuckles;
+					loadSub = (alt) ? Tikal_Main : Knuckles_Main;
+					charid = (alt) ? Characters_Tikal : Characters_Knuckles;
 				}
 				else if (buttons & Buttons_Right)
 				{
-					loadSub = Amy_Main;
-					charid = Characters_Amy;
+					loadSub = (alt) ? Eggman_Main : Amy_Main;
+					charid = (alt) ? Characters_Eggman : Characters_Amy;
 				}
 				else
 				{
