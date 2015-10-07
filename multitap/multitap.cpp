@@ -50,8 +50,7 @@ extern "C"
 				{
 					CharObj1Ptrs[i]->Position = CharObj1Ptrs[x]->Position;
 					CharObj1Ptrs[i]->Rotation = CharObj1Ptrs[x]->Rotation;
-					CharObj2Ptrs[i]->HSpeed = 0;
-					CharObj2Ptrs[i]->VSpeed = 0;
+					CharObj2Ptrs[i]->Speed = {};
 
 					CharObj1Ptrs[i]->Action = 0;
 					CharObj1Ptrs[i]->Status &= ~Status_Attack;
@@ -66,29 +65,29 @@ extern "C"
 			if (ControllersRaw[i].HeldButtons & Buttons_Y && GetCharObj2(i) == nullptr)
 			{
 				void(__cdecl* loadSub)(ObjectMaster*);
-				uint8_t charid = 0;
+				uint8_t charid;
 				int buttons = ControllersRaw[i].PressedButtons;
 				bool alt = (ControllersRaw[i].HeldButtons & Buttons_Z) != 0;
 
 				if (buttons & Buttons_Up)
 				{
-					loadSub = (alt) ? Big_Main : Sonic_Main;
-					charid = (alt) ? Characters_Big : Characters_Sonic;
+					loadSub = alt ? Big_Main : Sonic_Main;
+					charid = alt ? Characters_Big : Characters_Sonic;
 				}
 				else if (buttons & Buttons_Down)
 				{
-					loadSub = (alt) ? Gamma_Main : Tails_Main;
-					charid = (alt) ? Characters_Gamma : Characters_Tails;
+					loadSub = alt ? Gamma_Main : Tails_Main;
+					charid = alt ? Characters_Gamma : Characters_Tails;
 				}
 				else if (buttons & Buttons_Left)
 				{
-					loadSub = (alt) ? Tikal_Main : Knuckles_Main;
-					charid = (alt) ? Characters_Tikal : Characters_Knuckles;
+					loadSub = alt ? Tikal_Main : Knuckles_Main;
+					charid = alt ? Characters_Tikal : Characters_Knuckles;
 				}
 				else if (buttons & Buttons_Right)
 				{
-					loadSub = (alt) ? Eggman_Main : Amy_Main;
-					charid = (alt) ? Characters_Eggman : Characters_Amy;
+					loadSub = alt ? Eggman_Main : Amy_Main;
+					charid = alt ? Characters_Eggman : Characters_Amy;
 				}
 				else
 				{
