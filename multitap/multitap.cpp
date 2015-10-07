@@ -15,6 +15,21 @@ DataPointer(bool,	ControlEnabled,	0x00909FB0);
 
 void __cdecl Control_hook();
 
+void Teleport(uint8_t to, uint8_t from)
+{
+	if (CharObj1Ptrs[to] == nullptr || CharObj1Ptrs[from] == nullptr)
+		return;
+	if (CharObj2Ptrs[to] == nullptr || CharObj2Ptrs[from] == nullptr)
+
+	CharObj1Ptrs[from]->Position = CharObj1Ptrs[to]->Position;
+	CharObj1Ptrs[from]->Rotation = CharObj1Ptrs[to]->Rotation;
+
+	CharObj2Ptrs[from]->Speed = {};
+
+	CharObj1Ptrs[from]->Action = 0;
+	CharObj1Ptrs[from]->Status &= ~Status_Attack;
+}
+
 extern "C"
 {
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };
@@ -38,23 +53,13 @@ extern "C"
 				int x = 0;
 
 				if (buttons & Buttons_Up)
-					x = 0;
+					Teleport(0, i);
 				else if (buttons & Buttons_Down)
-					x = 1;
+					Teleport(1, i);
 				else if (buttons & Buttons_Left)
-					x = 2;
+					Teleport(2, i);
 				else if (buttons & Buttons_Right)
-					x = 3;
-
-				if (CharObj1Ptrs[x] != nullptr)
-				{
-					CharObj1Ptrs[i]->Position = CharObj1Ptrs[x]->Position;
-					CharObj1Ptrs[i]->Rotation = CharObj1Ptrs[x]->Rotation;
-					CharObj2Ptrs[i]->Speed = {};
-
-					CharObj1Ptrs[i]->Action = 0;
-					CharObj1Ptrs[i]->Status &= ~Status_Attack;
-				}
+					Teleport(3, i);
 
 				continue;
 			}
@@ -99,7 +104,7 @@ extern "C"
 				object->Data1->CharIndex = i;
 
 				CharObj1Ptrs[i] = object->Data1;
-				CharObj2Ptrs[i] = object->Data1->Ptr2;	// I know this is in ObjectMaster, but I'm playing it safe since it's not defined.
+				CharObj2Ptrs[i] = object->Data1->Ptr2;	// I know this is (probably) in ObjectMaster, but I'm playing it safe since it's not defined.
 				PlayerPtrs[i] = object;
 				dword_3B36DD0[i] = (void*)object->field_24;
 
