@@ -50,8 +50,6 @@ extern "C"
 				if ((buttons & (Buttons_Up | Buttons_Down | Buttons_Left | Buttons_Right)) == 0)
 					continue;
 
-				int x = 0;
-
 				if (buttons & Buttons_Up)
 					Teleport(0, i);
 				else if (buttons & Buttons_Down)
