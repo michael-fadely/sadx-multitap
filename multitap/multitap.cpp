@@ -19,12 +19,12 @@ void Teleport(uint8_t to, uint8_t from)
 {
 	if (CharObj1Ptrs[to] == nullptr || CharObj1Ptrs[from] == nullptr)
 		return;
-	if (CharObj2Ptrs[to] == nullptr || CharObj2Ptrs[from] == nullptr)
 
 	CharObj1Ptrs[from]->Position = CharObj1Ptrs[to]->Position;
 	CharObj1Ptrs[from]->Rotation = CharObj1Ptrs[to]->Rotation;
 
-	CharObj2Ptrs[from]->Speed = {};
+	if (CharObj2Ptrs[from] != nullptr)
+		CharObj2Ptrs[from]->Speed = {};
 
 	CharObj1Ptrs[from]->Action = 0;
 	CharObj1Ptrs[from]->Status &= ~Status_Attack;
