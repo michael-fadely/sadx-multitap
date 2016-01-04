@@ -29,13 +29,13 @@ extern "C"
 	{
 		char patch[3] = { 0x83u, 0xFFu, 0x04u };
 		WriteData((void*)0x0040F180, (void*)patch, sizeof(char) * 3);
+		WriteJump((void*)0x00421610, LoadIndicators);
 	}
 	__declspec(dllexport) void OnFrame()
 	{
-		if (GameState < 15 || LoadingFile)
+		if ((GameState < 4 || GameState > 16) || LoadingFile)
 			return;
 
-		LoadIndicators();
 		DrawIndicators();
 
 		for (uint8_t i = 0; i < 4; i++)

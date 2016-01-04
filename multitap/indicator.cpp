@@ -2,7 +2,9 @@
 
 FunctionPointer(void, Draw2DSprite, (NJS_SPRITE *_sp, Int n, Float pri, Uint32 attr, char zfunc_type), 0x00404660);
 FunctionPointer(void, SetSpriteColor, (NJS_ARGB *a1), 0x00402F40);
-
+FunctionPointer(Sint32, njLoadTexture, (NJS_TEXLIST *texlist), 0x0077FC80);
+FunctionPointer(Bool, IsControllerEnabled, (Uint8 index), 0x0040EFD0);
+FunctionPointer(char, IsVisible, (NJS_VECTOR *v), 0x004CD730);
 
 NJS_TEXNAME multicommon_texname[] = {
 	{ "arrow",	NJD_TEXATTR_BOTH, 0 },
@@ -56,29 +58,36 @@ enum AnimIndex
 
 void LoadIndicators()
 {
-	for (Uint32 x = 0; x < multicommon_texlist.nbTexture; x++)
-	{
-		if ((void*)multicommon_texlist.textures[x].texaddr == nullptr)
-		{
-			LoadPVM("multicommon", &multicommon_texlist);
-			break;
-		}
-	}
+	LoadPVM("multicommon", &multicommon_texlist);
 }
 
 void DrawElement(Uint32 i, Uint32 n)
 {
 	CharObj1* player = CharObj1Ptrs[i];
+
 	if (player == nullptr)
 		return;
 
+	NJS_SPRITE* sp = &multicommon_sprite;
 	NJS_VECTOR pos = player->Position;
 	pos.y += PhysicsArray[player->CharID].CollisionSize;
+	njProjectScreen(nullptr, &pos, (NJS_POINT2*)&sp->p);
 
-	njProjectScreen(nullptr, &pos, (NJS_POINT2*)&multicommon_sprite.p);
+	bool isVisible = sp->p.x - sp->tanim[i].sx < HorizontalResolution
+		|| sp->p.x + sp->tanim[i].sx > 0
+		|| sp->p.y - sp->tanim[i].sy < VerticalResolution
+		|| sp->p.y + sp->tanim[i].sy > 0;
 
-	SetSpriteColor(ControllerEnabled[i] ? &colors[i + 1] : &colors[0]);
-	Draw2DSprite(&multicommon_sprite, n, -1.0f, NJD_SPRITE_COLOR | NJD_SPRITE_ALPHA, 0);
+	if (!isVisible)
+	{
+		// Do off-screen pointing thing here
+		return;
+	}
+	else
+	{
+		SetSpriteColor(IsControllerEnabled(i) ? &colors[i + 1] : &colors[0]);
+		Draw2DSprite(&multicommon_sprite, n, -1.0f, NJD_SPRITE_COLOR | NJD_SPRITE_ALPHA, 0);
+	}
 }
 
 void DrawIndicators()
@@ -91,14 +100,14 @@ void DrawIndicators()
 
 	for (Uint32 i = 0; i < 4; i++)
 	{
-		AnimIndex a = ControllerEnabled[i] ? p : cpu_1;
+		AnimIndex a = IsControllerEnabled(i) ? p : cpu_1;
 		njSetTextureNum(a);
 		DrawElement(i, a);
 	}
 
 	for (Uint32 i = 0; i < 4; i++)
 	{
-		AnimIndex a = ControllerEnabled[i] ? (AnimIndex)(p1 + i) : cpu_2;
+		AnimIndex a = IsControllerEnabled(i) ? (AnimIndex)(p1 + i) : cpu_2;
 		njSetTextureNum(a);
 		DrawElement(i, a);
 	}

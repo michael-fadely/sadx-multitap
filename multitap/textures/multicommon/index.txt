@@ -1,0 +1,8 @@
+13370,arrow.png
+13371,cpu_1.png
+13372,cpu_2.png
+13373,p.png
+13374,p1.png
+13375,p2.png
+13376,p3.png
+13377,p4.png
