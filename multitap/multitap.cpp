@@ -1,9 +1,9 @@
 #include <SADXModLoader.h>
+#include "indicator.h"
 
 FunctionPointer(void, sub_414810, (CharObj1*), 0x414810);
 FunctionPointer(void, WriteAnalogs, (void), 0x0040F170);
 FunctionPointer(void, UpdateMenuInput, (int index), 0x0040F070);	// TODO: Move to mod loader
-
 DataArray(void*, dword_3B36DD0, 0x3B36DD0, 8);
 
 void Teleport(uint8_t to, uint8_t from)
@@ -32,6 +32,12 @@ extern "C"
 	}
 	__declspec(dllexport) void OnFrame()
 	{
+		if (GameState < 15 || LoadingFile)
+			return;
+
+		LoadIndicators();
+		DrawIndicators();
+
 		for (uint8_t i = 0; i < 4; i++)
 		{
 			if (GetCharObj2(i) != nullptr && ControllerPointers[i]->HeldButtons & Buttons_C)

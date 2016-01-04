@@ -58,7 +58,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy /Y /D "$(ProjectDir)mod.ini" "$(OutDir)"</Command>
+      <Command>xcopy /Y /D "$(ProjectDir)mod.ini" "$(OutDir)"
+mkdir "$(OutDir)textures"
+xcopy /Y /D /E "$(ProjectDir)textures" "$(OutDir)textures"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -78,7 +80,9 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy /Y /D "$(ProjectDir)mod.ini" "$(OutDir)"</Command>
+      <Command>xcopy /Y /D "$(ProjectDir)mod.ini" "$(OutDir)"
+mkdir "$(OutDir)textures"
+xcopy /Y /D /E "$(ProjectDir)textures" "$(OutDir)textures"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -90,7 +94,11 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="indicator.cpp" />
     <ClCompile Include="multitap.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="indicator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
