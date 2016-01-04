@@ -2,7 +2,7 @@
 
 FunctionPointer(void, sub_414810, (CharObj1*), 0x414810);
 FunctionPointer(void, WriteAnalogs, (void), 0x0040F170);
-FunctionPointer(void, UpdateController, (int index), 0x0040F070);
+FunctionPointer(void, UpdateMenuInput, (int index), 0x0040F070);	// TODO: Move to mod loader
 
 DataArray(void*, dword_3B36DD0, 0x3B36DD0, 8);
 
@@ -127,6 +127,6 @@ extern "C"
 		WriteAnalogs();
 
 		for (int i = 0; i < 4; i++)
-			UpdateController(i);
+			UpdateMenuInput(i);
 	}
 }
