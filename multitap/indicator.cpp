@@ -52,9 +52,9 @@ void LoadIndicators()
 	LoadPVM("multicommon", &multicommon_TEXLIST);
 }
 
-void DrawElement(Uint32 i, Uint32 n)
+void DrawElement(Uint32 playerIndex, Uint32 textureIndex)
 {
-	CharObj1* player = CharObj1Ptrs[i];
+	CharObj1* player = CharObj1Ptrs[playerIndex];
 
 	if (player == nullptr)
 		return;
@@ -65,10 +65,10 @@ void DrawElement(Uint32 i, Uint32 n)
 	pos.y += PhysicsArray[charid].CollisionSize;
 	njProjectScreen(nullptr, &pos, (NJS_POINT2*)&sp->p);
 
-	bool isVisible = sp->p.x - sp->tanim[i].sx < HorizontalResolution
-		|| sp->p.x + sp->tanim[i].sx > 0
-		|| sp->p.y - sp->tanim[i].sy < VerticalResolution
-		|| sp->p.y + sp->tanim[i].sy > 0;
+	bool isVisible = sp->p.x - sp->tanim[playerIndex].sx < HorizontalResolution
+		|| sp->p.x + sp->tanim[playerIndex].sx > 0
+		|| sp->p.y - sp->tanim[playerIndex].sy < VerticalResolution
+		|| sp->p.y + sp->tanim[playerIndex].sy > 0;
 
 	if (!isVisible)
 	{
@@ -77,8 +77,8 @@ void DrawElement(Uint32 i, Uint32 n)
 	}
 	else
 	{
-		SetSpriteColor(IsControllerEnabled((Uint8)i) ? &colors[charid] : &colors[9]);
-		Draw2DSprite(&Indicator_SPRITE, n, -1.0f, NJD_SPRITE_COLOR | NJD_SPRITE_ALPHA, 0);
+		SetSpriteColor(IsControllerEnabled((Uint8)playerIndex) ? &colors[charid] : &colors[9]);
+		Draw2DSprite(&Indicator_SPRITE, textureIndex, -1.0f, NJD_SPRITE_COLOR | NJD_SPRITE_ALPHA, 0);
 	}
 }
 
@@ -92,16 +92,16 @@ void DrawIndicators()
 
 	for (Uint32 i = 0; i < 4; i++)
 	{
-		TextureIndex a = IsControllerEnabled((Uint8)i) ? p : cpu_1;
-		njSetTextureNum(a);
-		DrawElement(i, a);
+		TextureIndex index = IsControllerEnabled((Uint8)i) ? p : cpu_1;
+		njSetTextureNum(index);
+		DrawElement(i, index);
 	}
 
 	for (Uint32 i = 0; i < 4; i++)
 	{
-		TextureIndex a = IsControllerEnabled((Uint8)i) ? (TextureIndex)(p1 + i) : cpu_2;
-		njSetTextureNum(a);
-		DrawElement(i, a);
+		TextureIndex index = IsControllerEnabled((Uint8)i) ? (TextureIndex)(p1 + i) : cpu_2;
+		njSetTextureNum(index);
+		DrawElement(i, index);
 	}
 }
 
