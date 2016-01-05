@@ -103,7 +103,7 @@ extern "C"
 				PlayerPtrs[i] = object;
 				dword_3B36DD0[i] = (void*)object->field_24;
 
-				ControllerEnabled[i] = true;
+				EnableController((Uint8)i);
 
 				sub_414810(object->Data1);
 			}
