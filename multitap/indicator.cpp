@@ -1,5 +1,11 @@
 #include <SADXModLoader.h>
 
+enum TextureIndex
+{
+	arrow, cpu_1, cpu_2,
+	p, p1, p2, p3, p4
+};
+
 NJS_TEXNAME multicommon_TEXNAME[] = {
 	{ "arrow",	NJD_TEXATTR_BOTH, 0 },
 	{ "cpu_1",	NJD_TEXATTR_BOTH, 0 },
@@ -16,14 +22,14 @@ NJS_TEXLIST multicommon_TEXLIST = { arrayptrandlength(multicommon_TEXNAME) };
 NJS_TEXANIM Indicator_TEXANIM[] = {
 	// w,	h,	cx,	cy,	u1,	v1,	u2,		v2,	texid,	attr
 	// u2 and v2 must be 0xFF
-	{ 24,	16,	12,	16,	0,	0,	0xFF,	0xFF,	0,	0 },	// arrow
-	{ 24,	24,	24,	40,	0,	0,	0xFF,	0xFF,	1,	0 },	// cpu_1
-	{ 24,	24,	0,	40,	0,	0,	0xFF,	0xFF,	2,	0 },	// cpu_2
-	{ 24,	24,	24,	40,	0,	0,	0xFF,	0xFF,	3,	0 },	// p
-	{ 24,	24,	0,	40,	0,	0,	0xFF,	0xFF,	4,	0 },	// p1
-	{ 24,	24,	0,	40,	0,	0,	0xFF,	0xFF,	5,	0 },	// p2
-	{ 24,	24,	0,	40,	0,	0,	0xFF,	0xFF,	6,	0 },	// p3
-	{ 24,	24,	0,	40,	0,	0,	0xFF,	0xFF,	7,	0 }		// p4
+	{ 24,	16,	12,	16,	0,	0,	0xFF,	0xFF,	arrow,	0 },
+	{ 24,	24,	24,	40,	0,	0,	0xFF,	0xFF,	cpu_1,	0 },
+	{ 24,	24,	0,	40,	0,	0,	0xFF,	0xFF,	cpu_2,	0 },
+	{ 24,	24,	24,	40,	0,	0,	0xFF,	0xFF,	p,		0 },
+	{ 24,	24,	0,	40,	0,	0,	0xFF,	0xFF,	p1,		0 },
+	{ 24,	24,	0,	40,	0,	0,	0xFF,	0xFF,	p2,		0 },
+	{ 24,	24,	0,	40,	0,	0,	0xFF,	0xFF,	p3,		0 },
+	{ 24,	24,	0,	40,	0,	0,	0xFF,	0xFF,	p4,		0 }
 };
 
 NJS_SPRITE Indicator_SPRITE = { { 0.0f, 0.0f, 0.0f }, 1.0f, 1.0f, 0, &multicommon_TEXLIST, Indicator_TEXANIM };
@@ -39,12 +45,6 @@ NJS_ARGB colors[] = {
 	{ 1.000f, 0.451f, 0.192f, 0.804f }, // Big
 	{ 1.000f, 0.000f, 1.000f, 1.000f }, // Metal Sonic
 	{ 0.750f, 0.500f, 0.500f, 0.500f }	// CPU
-};
-
-enum AnimIndex
-{
-	arrow, cpu_1, cpu_2,
-	p, p1, p2, p3, p4
 };
 
 void LoadIndicators()
@@ -92,14 +92,14 @@ void DrawIndicators()
 
 	for (Uint32 i = 0; i < 4; i++)
 	{
-		AnimIndex a = IsControllerEnabled((Uint8)i) ? p : cpu_1;
+		TextureIndex a = IsControllerEnabled((Uint8)i) ? p : cpu_1;
 		njSetTextureNum(a);
 		DrawElement(i, a);
 	}
 
 	for (Uint32 i = 0; i < 4; i++)
 	{
-		AnimIndex a = IsControllerEnabled((Uint8)i) ? (AnimIndex)(p1 + i) : cpu_2;
+		TextureIndex a = IsControllerEnabled((Uint8)i) ? (TextureIndex)(p1 + i) : cpu_2;
 		njSetTextureNum(a);
 		DrawElement(i, a);
 	}
