@@ -85,7 +85,7 @@ void DrawElement(Uint32 i, Uint32 n)
 void DrawIndicators()
 {
 	njSetTexture(&multicommon_TEXLIST);
-	njSetTextureNum(arrow);	// arrow
+	njSetTextureNum(arrow);
 
 	for (Uint32 i = 0; i < 4; i++)
 		DrawElement(i, arrow);
