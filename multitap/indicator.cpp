@@ -33,27 +33,22 @@ NJS_TEXANIM multicommon_texanim[] = {
 NJS_SPRITE multicommon_sprite = { { 0.f, 0.f, 0.f }, 1.f, 1.f, 0, &multicommon_texlist, multicommon_texanim };
 
 NJS_ARGB colors[] = {
-	{ 1.00f, 0.50f, 0.50f, 0.50f }, // Grey (CPU)
-	{ 1.00f, 1.00f, 0.00f, 0.00f }, // Red
-	{ 1.00f, 0.00f, 1.00f, 0.00f }, // Green
-	{ 1.00f, 0.00f, 0.00f, 1.00f }, // Blue
-	{ 1.00f, 1.00f, 1.00f, 0.00f }, // Yellow
-	{ 1.00f, 0.50f, 0.00f, 0.50f }, // Purple
-	{ 1.00f, 0.00f, 1.00f, 1.00f }, // Cyan
-	{ 1.00f, 1.00f, 0.65f, 0.00f }, // Orange
-	{ 1.00f, 1.00f, 0.00f, 1.00f }, // Magenta
+	{ 1.000f, 0.000f, 0.000f, 1.000f }, // Sonic
+	{ 1.000f, 0.500f, 0.000f, 0.000f }, // Eggman
+	{ 1.000f, 1.000f, 0.804f, 0.000f }, // Tails
+	{ 1.000f, 1.000f, 0.063f, 0.000f }, // Knuckles
+	{ 1.000f, 1.000f, 0.545f, 0.322f }, // Tikal
+	{ 1.000f, 1.000f, 0.545f, 0.741f }, // Amy
+	{ 1.000f, 0.545f, 0.545f, 0.545f }, // Gamma
+	{ 1.000f, 0.451f, 0.192f, 0.804f }, // Big
+	{ 1.000f, 0.000f, 1.000f, 1.000f }, // Metal Sonic
+	{ 0.750f, 0.500f, 0.500f, 0.500f }
 };
 
 enum AnimIndex
 {
-	arrow,
-	cpu_1,
-	cpu_2,
-	p,
-	p1,
-	p2,
-	p3,
-	p4
+	arrow, cpu_1, cpu_2,
+	p, p1, p2, p3, p4
 };
 
 void LoadIndicators()
@@ -70,7 +65,8 @@ void DrawElement(Uint32 i, Uint32 n)
 
 	NJS_SPRITE* sp = &multicommon_sprite;
 	NJS_VECTOR pos = player->Position;
-	pos.y += PhysicsArray[player->CharID].CollisionSize;
+	Uint8 charid = (MetalSonicFlag) ? Characters_MetalSonic : player->CharID;
+	pos.y += PhysicsArray[charid].CollisionSize;
 	njProjectScreen(nullptr, &pos, (NJS_POINT2*)&sp->p);
 
 	bool isVisible = sp->p.x - sp->tanim[i].sx < HorizontalResolution
@@ -85,7 +81,7 @@ void DrawElement(Uint32 i, Uint32 n)
 	}
 	else
 	{
-		SetSpriteColor(IsControllerEnabled(i) ? &colors[i + 1] : &colors[0]);
+		SetSpriteColor(IsControllerEnabled(i) ? &colors[charid] : &colors[9]);
 		Draw2DSprite(&multicommon_sprite, n, -1.0f, NJD_SPRITE_COLOR | NJD_SPRITE_ALPHA, 0);
 	}
 }
