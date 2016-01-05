@@ -7,14 +7,14 @@ enum TextureIndex
 };
 
 NJS_TEXNAME multicommon_TEXNAME[] = {
-	{ "arrow",	NJD_TEXATTR_BOTH, 0 },
-	{ "cpu_1",	NJD_TEXATTR_BOTH, 0 },
-	{ "cpu_2",	NJD_TEXATTR_BOTH, 0 },
-	{ "p",		NJD_TEXATTR_BOTH, 0 },
-	{ "p1",		NJD_TEXATTR_BOTH, 0 },
-	{ "p2",		NJD_TEXATTR_BOTH, 0 },
-	{ "p3",		NJD_TEXATTR_BOTH, 0 },
-	{ "p4",		NJD_TEXATTR_BOTH, 0 }
+	{ "arrow",	0, 0 },
+	{ "cpu_1",	0, 0 },
+	{ "cpu_2",	0, 0 },
+	{ "p",		0, 0 },
+	{ "p1",		0, 0 },
+	{ "p2",		0, 0 },
+	{ "p3",		0, 0 },
+	{ "p4",		0, 0 }
 };
 
 NJS_TEXLIST multicommon_TEXLIST = { arrayptrandlength(multicommon_TEXNAME) };
