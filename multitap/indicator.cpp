@@ -66,9 +66,9 @@ void DrawElement(Uint32 playerIndex, Uint32 textureIndex)
 	njProjectScreen(nullptr, &pos, (NJS_POINT2*)&sp->p);
 
 	bool isVisible = sp->p.x - sp->tanim[playerIndex].sx < HorizontalResolution
-		|| sp->p.x + sp->tanim[playerIndex].sx > 0
-		|| sp->p.y - sp->tanim[playerIndex].sy < VerticalResolution
-		|| sp->p.y + sp->tanim[playerIndex].sy > 0;
+		&& sp->p.x + sp->tanim[playerIndex].sx > 0
+		&& sp->p.y - sp->tanim[playerIndex].sy < VerticalResolution
+		&& sp->p.y + sp->tanim[playerIndex].sy > 0;
 
 	if (!isVisible)
 	{
