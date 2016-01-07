@@ -1,4 +1,5 @@
 #include <SADXModLoader.h>
+#include "multitap.h"
 #include "indicator.h"
 
 FunctionPointer(void, sub_414810, (CharObj1*), 0x414810);
@@ -27,9 +28,16 @@ extern "C"
 
 	__declspec(dllexport) void Init()
 	{
+		// Enables WriteAnalogs for controllers >= 2 (3)
 		char patch[3] = { 0x83u, 0xFFu, 0x04u };
 		WriteData((void*)0x0040F180, (void*)patch, sizeof(char) * 3);
+		// some dumb hook
 		WriteJump((void*)0x00421610, LoadIndicators);
+		
+		// Object patches
+		WriteData((Uint8*)0x007A4DC4, PLAYER_COUNT); // Spring_Main
+		WriteData((Uint8*)0x007A4FF7, PLAYER_COUNT); // SpringB_Main
+		WriteData((Uint8*)0x0079F77C, PLAYER_COUNT); // SpringH_Main
 	}
 	__declspec(dllexport) void OnFrame()
 	{
@@ -38,7 +46,7 @@ extern "C"
 
 		DrawIndicators();
 
-		for (uint8_t i = 0; i < 4; i++)
+		for (uint8_t i = 0; i < PLAYER_COUNT; i++)
 		{
 			if (GetCharObj2(i) != nullptr && ControllerPointers[i]->HeldButtons & Buttons_C)
 			{
@@ -59,8 +67,14 @@ extern "C"
 				continue;
 			}
 
-			if (i == 0)
+			if (i == 0 /*|| i == 1*/)
 				continue;
+
+			/*
+			*ControllerPointers[2] = *ControllerPointers[1];
+			EnableController(2);
+			DisableController(1);
+			*/
 
 			if (ControllerPointers[i]->HeldButtons & Buttons_Y && GetCharObj2(i) == nullptr)
 			{
@@ -112,16 +126,9 @@ extern "C"
 
 	__declspec(dllexport) void __cdecl OnControl()
 	{
-		if (!ControlEnabled)
+		for (int i = 2; i < PLAYER_COUNT; i++)
 		{
-			memset(&Controllers[0], 0, sizeof(ControllerData) * Controllers_Length);
-			WriteAnalogs();
-			return;
-		}
-
-		for (int i = 0; i < 4; i++)
-		{
-			if (!ControllerEnabled[i])
+			if (!IsControllerEnabled(i))
 			{
 				memset(&Controllers[i], 0, sizeof(ControllerData));
 				continue;
@@ -129,10 +136,5 @@ extern "C"
 
 			memcpy(&Controllers[i], ControllerPointers[i], sizeof(ControllerData));
 		}
-
-		WriteAnalogs();
-
-		for (int i = 0; i < 4; i++)
-			UpdateMenuInput(i);
 	}
 }

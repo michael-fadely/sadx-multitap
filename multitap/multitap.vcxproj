@@ -99,6 +99,8 @@ xcopy /Y /D /E "$(ProjectDir)textures" "$(OutDir)textures"</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="indicator.h" />
+    <ClInclude Include="minmax.h" />
+    <ClInclude Include="multitap.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

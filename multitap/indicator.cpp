@@ -1,10 +1,19 @@
 #include <SADXModLoader.h>
+#include "minmax.h"
 
 enum TextureIndex
 {
 	arrow, cpu_1, cpu_2,
 	p, p1, p2, p3, p4
 };
+
+static const float margin = 0.875;
+#define MARGIN_RIGHT	(HorizontalResolution * margin)
+#define MARGIN_LEFT		(HorizontalResolution - MARGIN_RIGHT)
+#define MARGIN_BOTTOM	(VerticalResolution * margin)
+#define MARGIN_TOP		(VerticalResolution - MARGIN_BOTTOM)
+
+#pragma region sprite parameters
 
 NJS_TEXNAME multicommon_TEXNAME[] = {
 	{ "arrow",	0, 0 },
@@ -19,7 +28,7 @@ NJS_TEXNAME multicommon_TEXNAME[] = {
 
 NJS_TEXLIST multicommon_TEXLIST = { arrayptrandlength(multicommon_TEXNAME) };
 
-NJS_TEXANIM Indicator_TEXANIM[] = {
+NJS_TEXANIM onscreen_texanim[] = {
 	// w,	h,	cx,	cy,	u1,	v1,	u2,		v2,	texid,	attr
 	// u2 and v2 must be 0xFF
 	{ 24,	16,	12,	16,	0,	0,	0xFF,	0xFF,	arrow,	0 },
@@ -32,7 +41,20 @@ NJS_TEXANIM Indicator_TEXANIM[] = {
 	{ 24,	24,	0,	40,	0,	0,	0xFF,	0xFF,	p4,		0 }
 };
 
-NJS_SPRITE Indicator_SPRITE = { { 0.0f, 0.0f, 0.0f }, 1.0f, 1.0f, 0, &multicommon_TEXLIST, Indicator_TEXANIM };
+NJS_TEXANIM offscreen_texanim[] = {
+	// w,	h,	cx,	cy,	u1,	v1,	u2,		v2,	texid,	attr
+	// u2 and v2 must be 0xFF
+	{ 24,	16,	12,	0,	0,	0,	0xFF,	0xFF,	arrow,	0 },
+	{ 24,	24,	24,	0,	0,	0,	0xFF,	0xFF,	cpu_1,	0 },
+	{ 24,	24,	0,	0,	0,	0,	0xFF,	0xFF,	cpu_2,	0 },
+	{ 24,	24,	24,	0,	0,	0,	0xFF,	0xFF,	p,		0 },
+	{ 24,	24,	0,	0,	0,	0,	0xFF,	0xFF,	p1,		0 },
+	{ 24,	24,	0,	0,	0,	0,	0xFF,	0xFF,	p2,		0 },
+	{ 24,	24,	0,	0,	0,	0,	0xFF,	0xFF,	p3,		0 },
+	{ 24,	24,	0,	0,	0,	0,	0xFF,	0xFF,	p4,		0 }
+};
+
+NJS_SPRITE Indicator_SPRITE = { { 0.0f, 0.0f, 0.0f }, 1.0f, 1.0f, 0, &multicommon_TEXLIST, nullptr };
 
 NJS_ARGB colors[] = {
 	{ 1.000f, 0.000f, 0.000f, 1.000f }, // Sonic
@@ -47,9 +69,22 @@ NJS_ARGB colors[] = {
 	{ 0.750f, 0.500f, 0.500f, 0.500f }	// CPU
 };
 
+#pragma endregion
+
 void LoadIndicators()
 {
 	LoadPVM("multicommon", &multicommon_TEXLIST);
+}
+
+void ClampToScreen(NJS_POINT2& p)
+{
+	p.x = clamp(p.x, (float)MARGIN_LEFT, (float)MARGIN_RIGHT);
+	p.y = clamp(p.y, (float)MARGIN_TOP, (float)MARGIN_BOTTOM);
+}
+
+double GetAngle(NJS_POINT2* source, NJS_POINT2* target)
+{
+	return atan2(target->y - source->y, target->x - source->x);
 }
 
 void DrawElement(Uint32 playerIndex, Uint32 textureIndex)
@@ -59,27 +94,45 @@ void DrawElement(Uint32 playerIndex, Uint32 textureIndex)
 	if (player == nullptr)
 		return;
 
-	NJS_SPRITE* sp = &Indicator_SPRITE;
-	NJS_VECTOR pos = player->Position;
 	Uint8 charid = (MetalSonicFlag) ? Characters_MetalSonic : player->CharID;
+	NJS_SPRITE* sp = &Indicator_SPRITE;
+	NJS_POINT2 projected;
+	NJS_VECTOR pos = player->Position;
 	pos.y += PhysicsArray[charid].CollisionSize;
-	njProjectScreen(nullptr, &pos, (NJS_POINT2*)&sp->p);
 
-	bool isVisible = sp->p.x - sp->tanim[playerIndex].sx < HorizontalResolution
-		&& sp->p.x + sp->tanim[playerIndex].sx > 0
-		&& sp->p.y - sp->tanim[playerIndex].sy < VerticalResolution
-		&& sp->p.y + sp->tanim[playerIndex].sy > 0;
+	njProjectScreen(nullptr, &pos, &projected);
+
+	sp->p = { projected.x, projected.y, 0.0f };
+
+	bool isVisible =
+		sp->p.x < MARGIN_RIGHT &&
+		sp->p.x > MARGIN_LEFT &&
+		sp->p.y < MARGIN_BOTTOM &&
+		sp->p.y > MARGIN_TOP;
+
+	ClampToScreen(*(NJS_POINT2*)&sp->p);
+	int flags = NJD_SPRITE_COLOR | NJD_SPRITE_ALPHA;
+	sp->ang = 0;
 
 	if (!isVisible)
 	{
-		// Do off-screen pointing thing here
-		return;
+		if (textureIndex != arrow)
+			return;
+
+		sp->tanim = offscreen_texanim;
+
+		flags |= NJD_SPRITE_ANGLE;
+		sp->ang = NJM_RAD_ANG(GetAngle((NJS_POINT2*)&sp->p, &projected)) - 0x4000;
+		sp->sx = sp->sy = 2.0f;
 	}
 	else
 	{
-		SetSpriteColor(IsControllerEnabled((Uint8)playerIndex) ? &colors[charid] : &colors[9]);
-		Draw2DSprite(&Indicator_SPRITE, textureIndex, -1.0f, NJD_SPRITE_COLOR | NJD_SPRITE_ALPHA, 0);
+		sp->sx = sp->sy = 1.0f;
+		sp->tanim = onscreen_texanim;
 	}
+
+	SetSpriteColor(IsControllerEnabled((Uint8)playerIndex) ? &colors[charid] : &colors[9]);
+	Draw2DSprite(sp, textureIndex, -1.0f, flags, 0);
 }
 
 void DrawIndicators()
