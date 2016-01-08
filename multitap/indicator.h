@@ -2,3 +2,4 @@
 
 void LoadIndicators();
 void DrawIndicators();
+void InitSprites();
