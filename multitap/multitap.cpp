@@ -2,10 +2,7 @@
 #include "multitap.h"
 #include "indicator.h"
 
-FunctionPointer(void, sub_414810, (CharObj1*), 0x414810);
-FunctionPointer(void, WriteAnalogs, (void), 0x0040F170);
-FunctionPointer(void, UpdateMenuInput, (int index), 0x0040F070);	// TODO: Move to mod loader
-DataArray(void*, dword_3B36DD0, 0x3B36DD0, 8);
+DataArray(void*, EntityData2Ptrs, 0x3B36DD0, 8);
 
 void Teleport(uint8_t to, uint8_t from)
 {
@@ -26,10 +23,10 @@ extern "C"
 {
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };
 
-	__declspec(dllexport) void Init()
+	__declspec(dllexport) void __cdecl Init()
 	{
 		// Enables WriteAnalogs for controllers >= 2 (3)
-		char patch[3] = { 0x83u, 0xFFu, 0x04u };
+		Uint8 patch[3] = { 0x83u, 0xFFu, 0x04u };
 		WriteData((void*)0x0040F180, (void*)patch, sizeof(char) * 3);
 		// some dumb hook
 		WriteJump((void*)0x00421610, LoadIndicators);
@@ -41,12 +38,16 @@ extern "C"
 
 		InitSprites();
 	}
-	__declspec(dllexport) void OnFrame()
+
+	__declspec(dllexport) void __cdecl OnFrame()
 	{
-		if ((GameState < 4 || GameState > 16) || LoadingFile)
+		if (GameState < 4 || GameState > 16 || LoadingFile)
 			return;
 
 		DrawIndicators();
+
+		if (ControllerPointers[0]->HeldButtons & Buttons_C)
+			*ControllerPointers[1] = *ControllerPointers[0];
 
 		for (uint8_t i = 0; i < PLAYER_COUNT; i++)
 		{
@@ -71,12 +72,6 @@ extern "C"
 
 			if (i == 0 /*|| i == 1*/)
 				continue;
-
-			/*
-			*ControllerPointers[2] = *ControllerPointers[1];
-			EnableController(2);
-			DisableController(1);
-			*/
 
 			if (ControllerPointers[i]->HeldButtons & Buttons_Y && GetCharObj2(i) == nullptr)
 			{
@@ -110,18 +105,18 @@ extern "C"
 					continue;
 				}
 
-				ObjectMaster* object = LoadObject(7, i + 1, loadSub);
+				ObjectMaster* object = LoadObject((LoadObj)7, i + 1, loadSub);
 				object->Data1->CharID = charid;
 				object->Data1->CharIndex = i;
 
 				CharObj1Ptrs[i] = object->Data1;
-				CharObj2Ptrs[i] = object->Data1->Ptr2;	// I know this is (probably) in ObjectMaster, but I'm playing it safe since it's not defined.
+				CharObj2Ptrs[i] = ((EntityData2*)object->Data2)->CharacterData;
 				PlayerPtrs[i] = object;
-				dword_3B36DD0[i] = (void*)object->field_24;
+				EntityData2Ptrs[i] = object->Data2;
 
 				EnableController((Uint8)i);
 
-				sub_414810(object->Data1);
+				PutPlayerAtStartPointIGuess(object->Data1);
 			}
 		}
 	}

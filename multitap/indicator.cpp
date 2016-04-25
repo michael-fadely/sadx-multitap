@@ -89,12 +89,12 @@ double GetAngle(NJS_POINT2* source, NJS_POINT2* target)
 
 void DrawElement(Uint32 playerIndex, Uint32 textureIndex)
 {
-	CharObj1* player = CharObj1Ptrs[playerIndex];
+	EntityData1* player = CharObj1Ptrs[playerIndex];
 
 	if (player == nullptr)
 		return;
 
-	Uint8 charid = (MetalSonicFlag) ? Characters_MetalSonic : player->CharID;
+	Uint8 charid = MetalSonicFlag ? Characters_MetalSonic : player->CharID;
 	NJS_SPRITE* sp = &sprites[playerIndex];
 	NJS_POINT2 projected;
 	NJS_VECTOR pos = player->Position;
