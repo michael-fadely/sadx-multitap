@@ -1,8 +1,12 @@
 #include <SADXModLoader.h>
 #include "multitap.h"
 #include "indicator.h"
+#include "Carry.h"
 
 DataArray(void*, EntityData2Ptrs, 0x3B36DD0, 8);
+DataPointer(ObjectMaster*, TailsAI_ptr, 0x03B2B358);
+
+static bool redirect = false;
 
 void Teleport(uint8_t to, uint8_t from)
 {
@@ -39,6 +43,21 @@ extern "C"
 		InitSprites();
 	}
 
+	__declspec(dllexport) void __cdecl OnInput()
+	{
+		if (ControllerPointers[0]->PressedButtons & Buttons_C)
+		{
+			redirect = !redirect;
+			*ControllerPointers[2] = {};
+		}
+
+		if (redirect)
+		{
+			*ControllerPointers[2] = *ControllerPointers[0];
+			*ControllerPointers[0] = {};
+		}
+	}
+
 	__declspec(dllexport) void __cdecl OnFrame()
 	{
 		if (GameState < 4 || GameState > 16 || LoadingFile)
@@ -46,10 +65,7 @@ extern "C"
 
 		DrawIndicators();
 
-		if (ControllerPointers[0]->HeldButtons & Buttons_C)
-			*ControllerPointers[1] = *ControllerPointers[0];
-
-		for (uint8_t i = 0; i < PLAYER_COUNT; i++)
+		for (Uint8 i = 0; i < PLAYER_COUNT; i++)
 		{
 			if (GetCharObj2(i) != nullptr && ControllerPointers[i]->HeldButtons & Buttons_C)
 			{
@@ -105,16 +121,21 @@ extern "C"
 					continue;
 				}
 
-				ObjectMaster* object = LoadObject((LoadObj)7, i + 1, loadSub);
+				ObjectMaster* object = LoadObject((LoadObj)7, 1, loadSub);
 				object->Data1->CharID = charid;
 				object->Data1->CharIndex = i;
+
+				if (charid == Characters_Tails)
+				{
+					Carry_Load(object);
+				}
 
 				CharObj1Ptrs[i] = object->Data1;
 				CharObj2Ptrs[i] = ((EntityData2*)object->Data2)->CharacterData;
 				PlayerPtrs[i] = object;
 				EntityData2Ptrs[i] = object->Data2;
 
-				EnableController((Uint8)i);
+				EnableController(i);
 
 				PutPlayerAtStartPointIGuess(object->Data1);
 			}
@@ -123,6 +144,9 @@ extern "C"
 
 	__declspec(dllexport) void __cdecl OnControl()
 	{
+		if (redirect)
+			*(float*)0x03B0E7A4 = 0.0f;
+
 		for (int i = 2; i < PLAYER_COUNT; i++)
 		{
 			if (!IsControllerEnabled(i))

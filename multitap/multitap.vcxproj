@@ -94,10 +94,12 @@ xcopy /Y /D /E "$(ProjectDir)textures" "$(OutDir)textures"</Command>
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Carry.cpp" />
     <ClCompile Include="indicator.cpp" />
     <ClCompile Include="multitap.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Carry.h" />
     <ClInclude Include="indicator.h" />
     <ClInclude Include="minmax.h" />
     <ClInclude Include="multitap.h" />
