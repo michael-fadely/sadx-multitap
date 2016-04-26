@@ -3,21 +3,28 @@
 
 enum class CarryState : Uint8
 {
+	Initialize,
 	Invalid,
 	Waiting,
-	Carrying
+	Carrying,
+	Dropped
 };
 
 struct Carry
 {
 	CarryState state;
-	bool dropped;
 	EntityData1* target;
 };
 
 static const float RANGE = 16.0f;
 
 inline bool isValidState(EntityData1* entity) { return entity->Action == 15 && !(entity->Status & Status_Ground); }
+inline float GetRange(NJS_VECTOR* target, NJS_VECTOR* parent)
+{
+	auto position = *target;
+	njSubVector(&position, parent);
+	return njScalor(&position);
+}
 
 static void __cdecl Carry_Main(ObjectMaster* object)
 {
@@ -25,17 +32,39 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 
 	EntityData1* parent = object->Parent->Data1;
 
-	if (data->dropped || !isValidState(parent))
+	if (data->state == CarryState::Initialize)
+	{
+		if (parent->CollisionInfo == nullptr)
+			return;
+
+		// Same behavior has 2P Tails.
+		// Can't deal damage to P1, can collide with other entities with these flags,
+		// can't collide with P1.
+		for (short i = 0; i < parent->CollisionInfo->Count; i++)
+			parent->CollisionInfo->CollisionArray[i].field_2 &= 0xDF00;
+
 		data->state = CarryState::Invalid;
+	}
+
+	if (data->state == CarryState::Dropped && !(parent->Status & Status_Ground))
+	{
+		auto distance = GetRange(&data->target->Position, &parent->Position);
+		if (distance < CharObj2Ptrs[data->target->CharIndex]->PhysicsData.CollisionSize)
+			return;
+
+		data->state = CarryState::Invalid;
+	}
+	else if (!isValidState(parent))
+	{
+		data->state = CarryState::Invalid;
+	}
 
 	switch (data->state)
 	{
 		case CarryState::Invalid:
 			data->target = nullptr;
 
-			if (parent->Status & Status_Ground && data->dropped)
-				data->dropped = false;
-			else if (isValidState(parent))
+			if (isValidState(parent))
 				data->state = CarryState::Waiting;
 
 			break;
@@ -52,15 +81,11 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 				if (!target)
 					continue;
 
-				NJS_VECTOR position = target->Position;
-				njSubVector(&position, &parent->Position);
-				float distance = njScalor(&position);
-
-				if (distance <= RANGE)
+				auto distance = GetRange(&target->Position, &parent->Position);
+				if (distance <= RANGE && distance >= CharObj2Ptrs[i]->PhysicsData.CollisionSize)
 				{
 					data->state = CarryState::Carrying;
 					data->target = target;
-					target->Action = 1;
 					target->Status &= ~Status_Ground;
 				}
 			}
@@ -73,8 +98,7 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 			EntityData1* target = data->target;
 			if (target->Status & Status_Ground)
 			{
-				data->state = CarryState::Invalid;
-				data->dropped = true;
+				data->state = CarryState::Dropped;
 				break;
 			}
 
