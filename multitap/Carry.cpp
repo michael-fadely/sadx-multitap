@@ -12,7 +12,6 @@ struct Carry
 {
 	CarryState state;
 	bool dropped;
-	ObjectMaster* parent;
 	EntityData1* target;
 };
 
@@ -24,7 +23,7 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 {
 	Carry* data = (Carry*)object->Data2;
 
-	EntityData1* parent = data->parent->Data1;
+	EntityData1* parent = object->Parent->Data1;
 
 	if (data->dropped || !isValidState(parent))
 		data->state = CarryState::Invalid;
@@ -50,7 +49,7 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 
 				auto target = CharObj1Ptrs[i];
 
-				if (!target/* || t1->Status & Status_Ground*/)
+				if (!target)
 					continue;
 
 				NJS_VECTOR position = target->Position;
@@ -110,9 +109,6 @@ void Carry_Load(ObjectMaster* parent)
 
 	object->MainSub = Carry_Main;
 	object->DeleteSub = Carry_Delete;
-
-	auto data = new Carry{};
-	data->parent = parent;
-
-	object->Data2 = data;
+	object->Parent = parent;
+	object->Data2 = new Carry{};
 }
