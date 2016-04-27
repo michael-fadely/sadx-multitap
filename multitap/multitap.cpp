@@ -7,6 +7,7 @@ DataArray(void*, EntityData2Ptrs, 0x3B36DD0, 8);
 DataPointer(ObjectMaster*, TailsAI_ptr, 0x03B2B358);
 
 static bool redirect = false;
+static ObjectMaster* LastTailsAI_ptr = nullptr;
 
 void Teleport(uint8_t to, uint8_t from)
 {
@@ -48,12 +49,12 @@ extern "C"
 		if (ControllerPointers[0]->PressedButtons & Buttons_C)
 		{
 			redirect = !redirect;
-			*ControllerPointers[2] = {};
+			*ControllerPointers[1] = {};
 		}
 
 		if (redirect)
 		{
-			*ControllerPointers[2] = *ControllerPointers[0];
+			*ControllerPointers[1] = *ControllerPointers[0];
 			*ControllerPointers[0] = {};
 		}
 	}
@@ -62,6 +63,17 @@ extern "C"
 	{
 		if (GameState < 4 || GameState > 16 || LoadingFile)
 			return;
+
+		if (LastTailsAI_ptr != TailsAI_ptr)
+		{
+			if (PlayerPtrs[1] != nullptr)
+			{
+				if (TailsAI_ptr != nullptr)
+					Carry_Load(PlayerPtrs[1]);
+
+				LastTailsAI_ptr = TailsAI_ptr;
+			}
+		}
 
 		DrawIndicators();
 

@@ -32,6 +32,9 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 
 	EntityData1* parent = object->Parent->Data1;
 
+	if (parent == nullptr)
+		return;
+
 	if (data->state == CarryState::Initialize)
 	{
 		if (parent->CollisionInfo == nullptr)
