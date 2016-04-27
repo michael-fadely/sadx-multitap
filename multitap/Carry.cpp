@@ -140,7 +140,9 @@ static void __cdecl Carry_Display(ObjectMaster* object)
 
 static void __cdecl Carry_Delete(ObjectMaster* object)
 {
+	object->Parent = nullptr;
 	delete (Carry*)object->Data2;
+	object->Data2 = nullptr;
 }
 
 void Carry_Load(ObjectMaster* parent)
