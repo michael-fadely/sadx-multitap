@@ -40,7 +40,7 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 		if (parent->CollisionInfo == nullptr)
 			return;
 
-		// Same behavior has 2P Tails.
+		// Same behavior as 2P Tails.
 		// Can't deal damage to P1, can collide with other entities with these flags,
 		// can't collide with P1.
 		for (short i = 0; i < parent->CollisionInfo->Count; i++)
@@ -52,7 +52,8 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 	if (data->state == CarryState::Dropped && !(parent->Status & Status_Ground))
 	{
 		auto distance = GetRange(&data->target->Position, &parent->Position);
-		if (distance < CharObj2Ptrs[data->target->CharIndex]->PhysicsData.CollisionSize)
+		if (distance < CharObj2Ptrs[data->target->CharIndex]->PhysicsData.CollisionSize ||
+			Controllers[data->target->CharIndex].HeldButtons & AttackButtons)
 			return;
 
 		data->state = CarryState::Invalid;
@@ -61,6 +62,8 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 	{
 		data->state = CarryState::Invalid;
 	}
+
+	object->DisplaySub(object);
 
 	switch (data->state)
 	{
@@ -99,14 +102,20 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 		case CarryState::Carrying:
 		{
 			EntityData1* target = data->target;
+			auto parent_data2 = CharObj2Ptrs[parent->CharIndex];
+			auto target_data2 = CharObj2Ptrs[target->CharIndex];
+
 			if (target->Status & Status_Ground)
 			{
 				data->state = CarryState::Dropped;
 				break;
 			}
-
-			auto parent_data2 = CharObj2Ptrs[parent->CharIndex];
-			auto target_data2 = CharObj2Ptrs[target->CharIndex];
+			if (Controllers[target->CharIndex].PressedButtons & AttackButtons)
+			{
+				target_data2->Speed.y = 0.0f;
+				data->state = CarryState::Dropped;
+				break;
+			}
 
 			target->Status &= ~Status_Attack;
 
@@ -123,6 +132,12 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 	}
 }
 
+static void __cdecl Carry_Display(ObjectMaster* object)
+{
+	Carry* data = (Carry*)object->Data2;
+	DrawColObj(object->Parent, 0);
+}
+
 static void __cdecl Carry_Delete(ObjectMaster* object)
 {
 	delete (Carry*)object->Data2;
@@ -135,6 +150,7 @@ void Carry_Load(ObjectMaster* parent)
 		return;
 
 	object->MainSub = Carry_Main;
+	object->DisplaySub = Carry_Display;
 	object->DeleteSub = Carry_Delete;
 	object->Parent = parent;
 	object->Data2 = new Carry{};
