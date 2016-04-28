@@ -146,6 +146,7 @@ extern "C"
 				CharObj2Ptrs[i] = ((EntityData2*)object->Data2)->CharacterData;
 				PlayerPtrs[i] = object;
 				EntityData2Ptrs[i] = object->Data2;
+				InitCharacterVars(i, object);
 
 				EnableController(i);
 
