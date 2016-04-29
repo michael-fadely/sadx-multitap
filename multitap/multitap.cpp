@@ -40,6 +40,7 @@ extern "C"
 		WriteData((Uint8*)0x007A4DC4, PLAYER_COUNT); // Spring_Main
 		WriteData((Uint8*)0x007A4FF7, PLAYER_COUNT); // SpringB_Main
 		WriteData((Uint8*)0x0079F77C, PLAYER_COUNT); // SpringH_Main
+		WriteData((Uint8*)0x004418B8, PLAYER_COUNT); // IsPlayerInsideSphere (could probably use a better name!)
 
 		InitSprites();
 	}

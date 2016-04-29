@@ -68,6 +68,9 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 	switch (data->state)
 	{
 		case CarryState::Invalid:
+			if (!IsControllerEnabled(parent->CharIndex))
+				break;
+
 			data->target = nullptr;
 
 			if (isValidState(parent))
