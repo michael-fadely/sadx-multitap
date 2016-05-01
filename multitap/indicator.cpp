@@ -64,8 +64,11 @@ static NJS_TEXANIM anims[PLAYER_COUNT][TextureIndex::count];
 
 #pragma endregion
 
-void LoadIndicators()
+VoidFunc(sub_4570B0, 0x004570B0);
+
+void __cdecl LoadIndicators()
 {
+	sub_4570B0();
 	LoadPVM("multicommon", &multicommon_TEXLIST);
 }
 

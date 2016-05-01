@@ -1,5 +1,5 @@
 #pragma once
 
-void LoadIndicators();
+void __cdecl LoadIndicators();
 void DrawIndicators();
 void InitSprites();
