@@ -18,8 +18,9 @@ struct Carry
 };
 
 static const float RANGE = 16.0f;
+static const short STATUS = Status_Ground | Status_Unknown1;
 
-inline bool isValidState(EntityData1* entity) { return entity->Action == 15 && !(entity->Status & Status_Ground); }
+inline bool isValidState(EntityData1* entity) { return entity->Action == 15 && !(entity->Status & STATUS); }
 inline float GetRange(NJS_VECTOR* target, NJS_VECTOR* parent)
 {
 	auto position = *target;
@@ -50,7 +51,12 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 		data->state = CarryState::Invalid;
 	}
 
-	if (data->state == CarryState::Dropped && !(parent->Status & Status_Ground))
+#ifdef _DEBUG
+	CharObj2* data2 = *(CharObj2**)object->Parent->Data2;
+	data2->TailsFlightTime = 0.0f;
+#endif
+
+	if (data->state == CarryState::Dropped && !(parent->Status & STATUS))
 	{
 		auto distance = GetRange(&data->target->Position, &parent->Position);
 		if (distance < CharObj2Ptrs[data->target->CharIndex]->PhysicsData.CollisionSize ||
@@ -96,7 +102,7 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 				{
 					data->state = CarryState::Carrying;
 					data->target = target;
-					target->Status &= ~Status_Ground;
+					target->Status &= ~STATUS;
 					data->offset = CharObj2Ptrs[i]->PhysicsData.YOff;
 				}
 			}
@@ -106,21 +112,29 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 
 		case CarryState::Carrying:
 		{
-			EntityData1* target = data->target;
+			auto target = data->target;
 			auto parent_data2 = CharObj2Ptrs[parent->CharIndex];
 			auto target_data2 = CharObj2Ptrs[target->CharIndex];
+			auto pressed = Controllers[target->CharIndex].PressedButtons;
+			bool nope = false;
 
-			if (target->Status & Status_Ground)
+			// TODO: Figure out how to handle jumping off of Tails
+
+			if (target->Status & (STATUS | Status_DoNextAction))
 			{
-				data->state = CarryState::Dropped;
-				target_data2->PhysicsData.YOff = data->offset;
-				break;
+				nope = true;
 			}
-			if (Controllers[target->CharIndex].PressedButtons & AttackButtons)
+			else if (pressed & AttackButtons)
 			{
 				target_data2->Speed.y = 0.0f;
-				target_data2->PhysicsData.YOff = data->offset;
+				nope = true;
+			}
+
+			if (nope)
+			{
 				data->state = CarryState::Dropped;
+				target_data2->PhysicsData.YOff = data->offset;
+				data->offset = 0.0f;
 				break;
 			}
 
@@ -132,10 +146,11 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 
 			target_data2->Speed = parent_data2->Speed;
 
-			if (CharObj1Ptrs[target->CharIndex]->CharID == Characters_Sonic)
+			// TODO: Amy also has a similar animation. Implement for her and find a good vertical offset (if necessary).
+			if (target->CharID == Characters_Sonic)
 			{
 				target_data2->AnimThing.Animation = 47;
-				target_data2->PhysicsData.YOff = 6.0f;
+				target_data2->PhysicsData.YOff = 7.0f;
 			}
 
 			break;
