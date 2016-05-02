@@ -102,7 +102,7 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 				{
 					data->state = CarryState::Carrying;
 					data->target = target;
-					target->Status &= ~STATUS;
+					target->Status &= ~(STATUS | Status_Attack | Status_Ball);
 					data->offset = CharObj2Ptrs[i]->PhysicsData.YOff;
 				}
 			}
@@ -120,7 +120,7 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 
 			// TODO: Figure out how to handle jumping off of Tails
 
-			if (target->Status & (STATUS | Status_DoNextAction))
+			if (target->Status & (STATUS | Status_DoNextAction | Status_Hurt))
 			{
 				nope = true;
 			}
