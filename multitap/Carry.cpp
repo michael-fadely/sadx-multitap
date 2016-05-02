@@ -14,6 +14,7 @@ struct Carry
 {
 	CarryState state;
 	EntityData1* target;
+	float offset;
 };
 
 static const float RANGE = 16.0f;
@@ -96,6 +97,7 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 					data->state = CarryState::Carrying;
 					data->target = target;
 					target->Status &= ~Status_Ground;
+					data->offset = CharObj2Ptrs[i]->PhysicsData.YOff;
 				}
 			}
 
@@ -111,11 +113,13 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 			if (target->Status & Status_Ground)
 			{
 				data->state = CarryState::Dropped;
+				target_data2->PhysicsData.YOff = data->offset;
 				break;
 			}
 			if (Controllers[target->CharIndex].PressedButtons & AttackButtons)
 			{
 				target_data2->Speed.y = 0.0f;
+				target_data2->PhysicsData.YOff = data->offset;
 				data->state = CarryState::Dropped;
 				break;
 			}
@@ -127,6 +131,13 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 			target->Rotation = parent->Rotation;
 
 			target_data2->Speed = parent_data2->Speed;
+
+			if (CharObj1Ptrs[target->CharIndex]->CharID == Characters_Sonic)
+			{
+				target_data2->AnimThing.Animation = 47;
+				target_data2->PhysicsData.YOff = 6.0f;
+			}
+
 			break;
 		}
 
@@ -137,7 +148,6 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 
 static void __cdecl Carry_Display(ObjectMaster* object)
 {
-	Carry* data = (Carry*)object->Data2;
 	DrawColObj(object->Parent, 0);
 }
 
