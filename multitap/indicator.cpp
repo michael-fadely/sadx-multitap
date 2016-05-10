@@ -6,7 +6,7 @@
 enum TextureIndex
 {
 	arrow, cpu_1, cpu_2,
-	p, p1, p2, p3, p4,
+	p, p1, p2, p3, p4, p5, p6, p7, p8,
 	count
 };
 
@@ -26,7 +26,11 @@ static NJS_TEXNAME multicommon_TEXNAME[TextureIndex::count] = {
 	{ "p1",		0, 0 },
 	{ "p2",		0, 0 },
 	{ "p3",		0, 0 },
-	{ "p4",		0, 0 }
+	{ "p4",		0, 0 },
+	{ "p5",		0, 0 },
+	{ "p6",		0, 0 },
+	{ "p7",		0, 0 },
+	{ "p8",		0, 0 }
 };
 
 static NJS_TEXLIST multicommon_TEXLIST = { arrayptrandlength(multicommon_TEXNAME) };
@@ -41,7 +45,11 @@ static NJS_TEXANIM Indicator_TEXANIM[TextureIndex::count] = {
 	{ 24,	24,	0,	12,		0,	0,	0xFF,	0xFF,	p1,		0 },
 	{ 24,	24,	0,	12,		0,	0,	0xFF,	0xFF,	p2,		0 },
 	{ 24,	24,	0,	12,		0,	0,	0xFF,	0xFF,	p3,		0 },
-	{ 24,	24,	0,	12,		0,	0,	0xFF,	0xFF,	p4,		0 }
+	{ 24,	24,	0,	12,		0,	0,	0xFF,	0xFF,	p4,		0 },
+	{ 24,	24,	0,	12,		0,	0,	0xFF,	0xFF,	p5,		0 },
+	{ 24,	24,	0,	12,		0,	0,	0xFF,	0xFF,	p6,		0 },
+	{ 24,	24,	0,	12,		0,	0,	0xFF,	0xFF,	p7,		0 },
+	{ 24,	24,	0,	12,		0,	0,	0xFF,	0xFF,	p8,		0 }
 };
 
 static NJS_SPRITE Indicator_SPRITE = { { 0.0f, 0.0f, 0.0f }, 1.0f, 1.0f, 0, &multicommon_TEXLIST, Indicator_TEXANIM };
@@ -97,7 +105,7 @@ void DrawElement(Uint32 playerIndex, Uint32 textureIndex)
 	if (player == nullptr)
 		return;
 
-	Uint8 charid = MetalSonicFlag ? Characters_MetalSonic : player->CharID;
+	Uint8 charid = MetalSonicFlag && player->CharID == Characters_Sonic ? Characters_MetalSonic : player->CharID;
 	NJS_SPRITE* sp = &sprites[playerIndex];
 	NJS_POINT2 projected;
 	NJS_VECTOR pos = player->Position;

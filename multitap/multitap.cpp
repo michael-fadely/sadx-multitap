@@ -46,7 +46,7 @@ extern "C"
 
 	__declspec(dllexport) void __cdecl OnInput()
 	{
-		if (ControllerPointers[0]->PressedButtons & Buttons_C)
+		if (ControllerPointers[0]->PressedButtons & Buttons_D)
 		{
 			redirect = !redirect;
 			*ControllerPointers[1] = {};
