@@ -1,9 +1,11 @@
 #include "Carry.h"
 #include "multitap.h"
 
+// from: https://github.com/nihilus/hexrays_tools/blob/master/code/defs.h
+#define _HIBYTE(x)   (*((Uint8*)&(x)+1))
+
 enum class CarryState : Uint8
 {
-	Initialize,
 	Invalid,
 	Waiting,
 	Carrying,
@@ -31,24 +33,19 @@ inline float GetRange(NJS_VECTOR* target, NJS_VECTOR* parent)
 static void __cdecl Carry_Main(ObjectMaster* object)
 {
 	Carry* data = (Carry*)object->Data2;
-
 	EntityData1* parent = object->Parent->Data1;
 
 	if (parent == nullptr)
 		return;
 
-	if (data->state == CarryState::Initialize)
+	if (parent->CollisionInfo != nullptr)
 	{
-		if (parent->CollisionInfo == nullptr)
-			return;
-
 		// Same behavior as 2P Tails.
 		// Can't deal damage to P1, can collide with other entities with these flags,
 		// can't collide with P1.
-		for (short i = 0; i < parent->CollisionInfo->Count; i++)
-			parent->CollisionInfo->CollisionArray[i].field_2 &= 0xDF00;
 
-		data->state = CarryState::Invalid;
+		for (short i = 0; i < parent->CollisionInfo->Count; i++)
+			_HIBYTE(parent->CollisionInfo->CollisionArray[i].field_2) &= 0xDFu;
 	}
 
 #ifdef _DEBUG
@@ -146,11 +143,24 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 
 			target_data2->Speed = parent_data2->Speed;
 
-			// TODO: Amy also has a similar animation. Implement for her and find a good vertical offset (if necessary).
-			if (target->CharID == Characters_Sonic)
+			// PhysicsData.YOff only seems to work on Sonic
+			switch ((Characters)target->CharID)
 			{
-				target_data2->AnimThing.Animation = 47;
-				target_data2->PhysicsData.YOff = 7.0f;
+				case Characters_Sonic:
+					target_data2->AnimThing.Animation = 47;
+					target_data2->PhysicsData.YOff = 7.0f;
+					break;
+
+				case Characters_Knuckles:
+					target_data2->AnimThing.Animation = 84;
+					break;
+
+				case Characters_Amy:
+					target_data2->AnimThing.Animation = 32;
+					break;
+
+				default:
+					break;
 			}
 
 			break;
