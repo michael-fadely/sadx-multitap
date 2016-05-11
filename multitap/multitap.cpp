@@ -33,7 +33,6 @@ extern "C"
 		// Enables WriteAnalogs for controllers >= 2 (3)
 		Uint8 patch[3] = { 0x83u, 0xFFu, 0x04u };
 		WriteData((void*)0x0040F180, (void*)patch, sizeof(char) * 3);
-		WriteCall((void*)0x00415A6D, LoadIndicators);
 		
 		// Object patches
 		WriteData((Uint8*)0x007A4DC4, PLAYER_COUNT); // Spring_Main
@@ -75,7 +74,7 @@ extern "C"
 			}
 		}
 
-		DrawIndicators();
+		InitIndicators();
 
 		for (Uint8 i = 0; i < PLAYER_COUNT; i++)
 		{

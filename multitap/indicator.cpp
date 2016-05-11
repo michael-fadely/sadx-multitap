@@ -11,6 +11,8 @@ enum TextureIndex
 };
 
 static const float margin = 0.875;
+static ObjectMaster* IndicatorInstance = nullptr;
+
 #define MARGIN_RIGHT	(HorizontalResolution * margin)
 #define MARGIN_LEFT		(HorizontalResolution - MARGIN_RIGHT)
 #define MARGIN_BOTTOM	(VerticalResolution * margin)
@@ -72,33 +74,25 @@ static NJS_TEXANIM anims[PLAYER_COUNT][TextureIndex::count];
 
 #pragma endregion
 
-VoidFunc(sub_4570B0, 0x004570B0);
-
-void __cdecl LoadIndicators()
-{
-	sub_4570B0();
-	LoadPVM("multicommon", &multicommon_TEXLIST);
-}
-
-void ClampToScreen(NJS_POINT2& p)
+inline void ClampToScreen(NJS_POINT2& p)
 {
 	p.x = clamp(p.x, (float)MARGIN_LEFT, (float)MARGIN_RIGHT);
 	p.y = clamp(p.y, (float)MARGIN_TOP, (float)MARGIN_BOTTOM);
 }
 
-void ClampToScreen(NJS_VECTOR& v)
+inline void ClampToScreen(NJS_VECTOR& v)
 {
 	NJS_POINT2 p = { v.x, v.y };
 	ClampToScreen(p);
 	v = { p.x, p.y, v.z };
 }
 
-double GetAngle(NJS_POINT2* source, NJS_POINT2* target)
+inline double GetAngle(NJS_POINT2* source, NJS_POINT2* target)
 {
 	return atan2(target->y - source->y, target->x - source->x);
 }
 
-void DrawElement(Uint32 playerIndex, Uint32 textureIndex)
+static void DrawElement(Uint32 playerIndex, Uint32 textureIndex)
 {
 	EntityData1* player = CharObj1Ptrs[playerIndex];
 
@@ -141,10 +135,29 @@ void DrawElement(Uint32 playerIndex, Uint32 textureIndex)
 	Draw2DSprite(sp, textureIndex, -1.0f, flags, 0);
 }
 
-void DrawIndicators()
+// TODO: Sub-objects for each player indicator
+static void __cdecl Indicator_Main(ObjectMaster* _this)
 {
+	if (!*(bool*)_this->UnknownB_ptr)
+	{
+		LoadPVM("multicommon", &multicommon_TEXLIST);
+		*(bool*)_this->UnknownB_ptr = true;
+	}
+
+	_this->DisplaySub(_this);
+}
+
+// TODO: Implement manual hud scale control in mod loader to fix this
+static void __cdecl Indicator_Display(ObjectMaster* _this)
+{
+	if (!*(bool*)_this->UnknownB_ptr)
+		return;
+
 	njSetTexture(&multicommon_TEXLIST);
 	njSetTextureNum(arrow);
+
+	Direct3D_SetAlphaBlend_(NJD_SOURCE_COLOR, NJD_COLOR_BLENDING_SRCALPHA);
+	Direct3D_SetAlphaBlend_(NJD_DESTINATION_COLOR, NJD_COLOR_BLENDING_INVSRCALPHA);
 
 	for (Uint32 i = 0; i < 4; i++)
 		DrawElement(i, arrow);
@@ -156,11 +169,31 @@ void DrawIndicators()
 		DrawElement(i, index);
 	}
 
-	for (Uint32 i = 0; i < 4; i++)
+	for (Uint8 i = 0; i < 4; i++)
 	{
-		TextureIndex index = IsControllerEnabled((Uint8)i) ? (TextureIndex)(p1 + i) : cpu_2;
+		TextureIndex index = IsControllerEnabled(i) ? (TextureIndex)(p1 + i) : cpu_2;
 		njSetTextureNum(index);
 		DrawElement(i, index);
+	}
+}
+
+static void __cdecl Indicator_Delete(ObjectMaster* _this)
+{
+	IndicatorInstance = nullptr;
+	if (*(bool*)_this->UnknownB_ptr)
+		njReleaseTexture(&multicommon_TEXLIST);
+}
+
+void InitIndicators()
+{
+	if (IndicatorInstance == nullptr)
+	{
+		auto object = LoadObject(LoadObj_UnknownB, 8, Indicator_Main);
+
+		object->DisplaySub = Indicator_Display;
+		object->DeleteSub = Indicator_Delete;
+
+		IndicatorInstance = object;
 	}
 }
 
