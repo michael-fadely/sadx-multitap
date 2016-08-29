@@ -4,7 +4,6 @@
 #include "Carry.h"
 
 DataArray(void*, EntityData2Ptrs, 0x3B36DD0, 8);
-DataPointer(ObjectMaster*, TailsAI_ptr, 0x03B2B358);
 
 static bool redirect = false;
 static ObjectMaster* LastTailsAI_ptr = nullptr;
