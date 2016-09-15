@@ -173,7 +173,9 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 
 static void __cdecl Carry_Display(ObjectMaster* object)
 {
+#ifdef _DEBUG
 	DrawColObj(object->Parent, 0);
+#endif
 }
 
 static void __cdecl Carry_Delete(ObjectMaster* object)
