@@ -189,9 +189,9 @@ void Carry_Load(ObjectMaster* parent)
 	if (object == nullptr)
 		return;
 
-	object->MainSub = Carry_Main;
+	object->MainSub    = Carry_Main;
 	object->DisplaySub = Carry_Display;
-	object->DeleteSub = Carry_Delete;
-	object->Parent = parent;
-	object->Data2 = new Carry{};
+	object->DeleteSub  = Carry_Delete;
+	object->Parent     = parent;
+	object->Data2      = new Carry {};
 }

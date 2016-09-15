@@ -156,8 +156,8 @@ static void __cdecl Indicator_Display(ObjectMaster* _this)
 	njSetTexture(&multicommon_TEXLIST);
 	njSetTextureNum(arrow);
 
-	Direct3D_SetAlphaBlend_(NJD_SOURCE_COLOR, NJD_COLOR_BLENDING_SRCALPHA);
-	Direct3D_SetAlphaBlend_(NJD_DESTINATION_COLOR, NJD_COLOR_BLENDING_INVSRCALPHA);
+	njColorBlendingMode(NJD_SOURCE_COLOR, NJD_COLOR_BLENDING_SRCALPHA);
+	njColorBlendingMode(NJD_DESTINATION_COLOR, NJD_COLOR_BLENDING_INVSRCALPHA);
 
 	for (Uint32 i = 0; i < 4; i++)
 		DrawElement(i, arrow);
