@@ -10,7 +10,7 @@ enum TextureIndex
 	count
 };
 
-static const float margin = 0.875;
+static constexpr float margin = 0.875f;
 static ObjectMaster* IndicatorInstance = nullptr;
 
 #define MARGIN_RIGHT	(HorizontalResolution * margin)
@@ -151,7 +151,9 @@ static void __cdecl Indicator_Main(ObjectMaster* _this)
 static void __cdecl Indicator_Display(ObjectMaster* _this)
 {
 	if (!*(bool*)_this->UnknownB_ptr)
+	{
 		return;
+	}
 
 	njSetTexture(&multicommon_TEXLIST);
 	njSetTextureNum(arrow);
@@ -160,7 +162,9 @@ static void __cdecl Indicator_Display(ObjectMaster* _this)
 	njColorBlendingMode(NJD_DESTINATION_COLOR, NJD_COLOR_BLENDING_INVSRCALPHA);
 
 	for (Uint32 i = 0; i < 4; i++)
+	{
 		DrawElement(i, arrow);
+	}
 
 	for (Uint32 i = 0; i < 4; i++)
 	{
@@ -180,21 +184,26 @@ static void __cdecl Indicator_Display(ObjectMaster* _this)
 static void __cdecl Indicator_Delete(ObjectMaster* _this)
 {
 	IndicatorInstance = nullptr;
+
 	if (*(bool*)_this->UnknownB_ptr)
+	{
 		njReleaseTexture(&multicommon_TEXLIST);
+	}
 }
 
 void InitIndicators()
 {
-	if (IndicatorInstance == nullptr)
+	if (IndicatorInstance != nullptr)
 	{
-		auto object = LoadObject(LoadObj_UnknownB, 8, Indicator_Main);
-
-		object->DisplaySub = Indicator_Display;
-		object->DeleteSub = Indicator_Delete;
-
-		IndicatorInstance = object;
+		return;
 	}
+
+	auto object = LoadObject(LoadObj_UnknownB, 8, Indicator_Main);
+
+	object->DisplaySub = Indicator_Display;
+	object->DeleteSub = Indicator_Delete;
+
+	IndicatorInstance = object;
 }
 
 void InitSprites()

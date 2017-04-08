@@ -11,13 +11,17 @@ static ObjectMaster* LastTailsAI_ptr = nullptr;
 void Teleport(uint8_t to, uint8_t from)
 {
 	if (CharObj1Ptrs[to] == nullptr || CharObj1Ptrs[from] == nullptr)
+	{
 		return;
+	}
 
 	CharObj1Ptrs[from]->Position = CharObj1Ptrs[to]->Position;
 	CharObj1Ptrs[from]->Rotation = CharObj1Ptrs[to]->Rotation;
 
 	if (CharObj2Ptrs[from] != nullptr)
+	{
 		CharObj2Ptrs[from]->Speed = {};
+	}
 
 	CharObj1Ptrs[from]->Action = 0;
 	CharObj1Ptrs[from]->Status &= ~Status_Attack;
@@ -67,7 +71,9 @@ extern "C"
 			if (PlayerPtrs[1] != nullptr)
 			{
 				if (TailsAI_ptr != nullptr)
+				{
 					Carry_Load(PlayerPtrs[1]);
+				}
 
 				LastTailsAI_ptr = TailsAI_ptr;
 			}
@@ -82,22 +88,34 @@ extern "C"
 				int buttons = ControllerPointers[i]->PressedButtons;
 
 				if ((buttons & (Buttons_Up | Buttons_Down | Buttons_Left | Buttons_Right)) == 0)
+				{
 					continue;
+				}
 
 				if (buttons & Buttons_Up)
+				{
 					Teleport(0, i);
+				}
 				else if (buttons & Buttons_Down)
+				{
 					Teleport(1, i);
+				}
 				else if (buttons & Buttons_Left)
+				{
 					Teleport(2, i);
+				}
 				else if (buttons & Buttons_Right)
+				{
 					Teleport(3, i);
+				}
 
 				continue;
 			}
 
 			if (i == 0 /*|| i == 1*/)
+			{
 				continue;
+			}
 
 			if (ControllerPointers[i]->HeldButtons & Buttons_Y && GetCharObj2(i) == nullptr)
 			{
@@ -156,7 +174,9 @@ extern "C"
 	__declspec(dllexport) void __cdecl OnControl()
 	{
 		if (redirect)
+		{
 			*(float*)0x03B0E7A4 = 0.0f;
+		}
 
 		for (int i = 2; i < PLAYER_COUNT; i++)
 		{
