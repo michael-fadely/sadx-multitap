@@ -148,7 +148,7 @@ extern "C"
 
 				EnableController(i);
 
-				PutPlayerAtStartPointIGuess(object->Data1);
+				MovePlayerToStartPoint(object->Data1);
 			}
 		}
 	}
