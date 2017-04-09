@@ -87,9 +87,10 @@ inline void ClampToScreen(NJS_VECTOR& v)
 	v = { p.x, p.y, v.z };
 }
 
-inline double GetAngle(NJS_POINT2* source, NJS_POINT2* target)
+template <typename T>
+double GetAngle(const T& source, const T& target)
 {
-	return atan2(target->y - source->y, target->x - source->x);
+	return atan2(target.y - source.y, target.x - source.x);
 }
 
 static void DrawElement(Uint32 playerIndex, Uint32 textureIndex)
@@ -97,21 +98,51 @@ static void DrawElement(Uint32 playerIndex, Uint32 textureIndex)
 	EntityData1* player = CharObj1Ptrs[playerIndex];
 
 	if (player == nullptr)
+	{
 		return;
+	}
 
-	Uint8 charid = MetalSonicFlag && player->CharID == Characters_Sonic ? Characters_MetalSonic : player->CharID;
+	auto charid = MetalSonicFlag && player->CharID == Characters_Sonic ? Characters_MetalSonic : player->CharID;
+
 	NJS_SPRITE* sp = &sprites[playerIndex];
-	NJS_POINT2 projected;
 	NJS_VECTOR pos = player->Position;
 	pos.y += PhysicsArray[charid].CollisionSize;
 
-	njProjectScreen(nullptr, &pos, &projected);
+	NJS_VECTOR vd;
+	njCalcPoint(nullptr, &pos, &vd); // Matrix stack contains only the view matrix right now
 
-	sp->p = { projected.x, projected.y - (sp->tanim[0].sy + sp->tanim[1].sy), 0.0f };
+	bool behind = vd.z <= 0.0f;
+	auto m = _nj_screen_.dist / vd.z;
+
+	if (behind)
+	{
+		m = -m;
+	}
+
+	auto xhalf = HorizontalResolution / 2.0f;
+	auto yhalf = VerticalResolution / 2.0f;
+
+	vd.x = vd.x * m + xhalf;
+	vd.y = vd.y * m + yhalf;
+
+	// If the player is behind the camera, round either the X or Y offset to the screen edge.
+	if (behind)
+	{
+		if (vd.y < (float)VerticalResolution && vd.y > 0.0f)
+		{
+			vd.x = vd.x < xhalf ? 0.0f : (float)HorizontalResolution;
+		}
+		else if (vd.x < (float)HorizontalResolution && vd.x > 0.0f)
+		{
+			vd.y = vd.y < yhalf ? 0.0f : (float)VerticalResolution;
+		}
+	}
+
+	sp->p = { vd.x, vd.y - (sp->tanim[0].sy + sp->tanim[1].sy), 0.0f };
 
 	bool isVisible =
-		sp->p.x < MARGIN_RIGHT &&
-		sp->p.x > MARGIN_LEFT &&
+		sp->p.x < MARGIN_RIGHT  &&
+		sp->p.x > MARGIN_LEFT   &&
 		sp->p.y < MARGIN_BOTTOM &&
 		sp->p.y > MARGIN_TOP;
 
@@ -124,11 +155,11 @@ static void DrawElement(Uint32 playerIndex, Uint32 textureIndex)
 		if (!isVisible)
 		{
 			flags |= NJD_SPRITE_ANGLE;
-			sp->ang = NJM_RAD_ANG(GetAngle((NJS_POINT2*)&sp->p, &projected)) - 0x4000;
+			sp->ang = NJM_RAD_ANG(GetAngle(sp->p, vd)) - 0x4000;
 		}
 
 		// TODO: Ellipse rotation around player number
-		sp->tanim[arrow].cy = Indicator_TEXANIM[arrow].cy - ((isVisible) ? 0 : 12);
+		sp->tanim[arrow].cy = Indicator_TEXANIM[arrow].cy - (isVisible ? 0 : 12);
 	}
 	
 	SetMaterialAndSpriteColor(IsControllerEnabled((Uint8)playerIndex) ? &colors[charid] : &colors[9]);
@@ -161,19 +192,19 @@ static void __cdecl Indicator_Display(ObjectMaster* _this)
 	njColorBlendingMode(NJD_SOURCE_COLOR, NJD_COLOR_BLENDING_SRCALPHA);
 	njColorBlendingMode(NJD_DESTINATION_COLOR, NJD_COLOR_BLENDING_INVSRCALPHA);
 
-	for (Uint32 i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		DrawElement(i, arrow);
 	}
 
-	for (Uint32 i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 	{
-		TextureIndex index = IsControllerEnabled((Uint8)i) ? p : cpu_1;
+		TextureIndex index = IsControllerEnabled(i) ? p : cpu_1;
 		njSetTextureNum(index);
 		DrawElement(i, index);
 	}
 
-	for (Uint8 i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		TextureIndex index = IsControllerEnabled(i) ? (TextureIndex)(p1 + i) : cpu_2;
 		njSetTextureNum(index);
@@ -208,7 +239,7 @@ void InitIndicators()
 
 void InitSprites()
 {
-	for (Uint32 i = 0; i < PLAYER_COUNT; i++)
+	for (int i = 0; i < PLAYER_COUNT; i++)
 	{
 		memcpy(anims[i], Indicator_TEXANIM, sizeof(NJS_TEXANIM) * TextureIndex::count);
 		sprites[i] = Indicator_SPRITE;
