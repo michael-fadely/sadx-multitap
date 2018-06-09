@@ -3,45 +3,43 @@
 #include "indicator.h"
 #include "Carry.h"
 
-DataArray(void*, EntityData2Ptrs, 0x3B36DD0, 8);
-
 static bool redirect = false;
 static ObjectMaster* LastTailsAI_ptr = nullptr;
 
 void Teleport(uint8_t to, uint8_t from)
 {
-	if (CharObj1Ptrs[to] == nullptr || CharObj1Ptrs[from] == nullptr)
+	if (EntityData1Ptrs[to] == nullptr || EntityData1Ptrs[from] == nullptr)
 	{
 		return;
 	}
 
-	CharObj1Ptrs[from]->Position = CharObj1Ptrs[to]->Position;
-	CharObj1Ptrs[from]->Rotation = CharObj1Ptrs[to]->Rotation;
+	EntityData1Ptrs[from]->Position = EntityData1Ptrs[to]->Position;
+	EntityData1Ptrs[from]->Rotation = EntityData1Ptrs[to]->Rotation;
 
 	if (CharObj2Ptrs[from] != nullptr)
 	{
 		CharObj2Ptrs[from]->Speed = {};
 	}
 
-	CharObj1Ptrs[from]->Action = 0;
-	CharObj1Ptrs[from]->Status &= ~Status_Attack;
+	EntityData1Ptrs[from]->Action = 0;
+	EntityData1Ptrs[from]->Status &= ~Status_Attack;
 }
 
 extern "C"
 {
-	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };
+	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer, nullptr, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, 0 };
 
 	__declspec(dllexport) void __cdecl Init()
 	{
 		// Enables WriteAnalogs for controllers >= 2 (3)
-		Uint8 patch[3] = { 0x83u, 0xFFu, 0x04u };
-		WriteData((void*)0x0040F180, (void*)patch, sizeof(char) * 3);
+		uint8_t patch[3] = { 0x83u, 0xFFu, 0x04u };
+		WriteData(reinterpret_cast<void*>(0x0040F180), static_cast<void*>(patch), 3);
 		
 		// Object patches
-		WriteData((Uint8*)0x007A4DC4, PLAYER_COUNT); // Spring_Main
-		WriteData((Uint8*)0x007A4FF7, PLAYER_COUNT); // SpringB_Main
-		WriteData((Uint8*)0x0079F77C, PLAYER_COUNT); // SpringH_Main
-		WriteData((Uint8*)0x004418B8, PLAYER_COUNT); // IsPlayerInsideSphere (could probably use a better name!)
+		WriteData(reinterpret_cast<Uint8*>(0x007A4DC4), PLAYER_COUNT); // Spring_Main
+		WriteData(reinterpret_cast<Uint8*>(0x007A4FF7), PLAYER_COUNT); // SpringB_Main
+		WriteData(reinterpret_cast<Uint8*>(0x0079F77C), PLAYER_COUNT); // SpringH_Main
+		WriteData(reinterpret_cast<Uint8*>(0x004418B8), PLAYER_COUNT); // IsPlayerInsideSphere (could probably use a better name!)
 
 		InitSprites();
 	}
@@ -158,10 +156,10 @@ extern "C"
 					Carry_Load(object);
 				}
 
-				CharObj1Ptrs[i] = object->Data1;
-				CharObj2Ptrs[i] = ((EntityData2*)object->Data2)->CharacterData;
+				EntityData1Ptrs[i] = object->Data1;
+				CharObj2Ptrs[i] = reinterpret_cast<EntityData2*>(object->Data2)->CharacterData;
 				PlayerPtrs[i] = object;
-				EntityData2Ptrs[i] = object->Data2;
+				EntityData2Ptrs[i] = reinterpret_cast<EntityData2*>(object->Data2);
 				InitCharacterVars(i, object);
 
 				EnableController(i);
@@ -175,7 +173,7 @@ extern "C"
 	{
 		if (redirect)
 		{
-			*(float*)0x03B0E7A4 = 0.0f;
+			NormalizedAnalogs[0].magnitude = 0.0f;
 		}
 
 		for (int i = 2; i < PLAYER_COUNT; i++)

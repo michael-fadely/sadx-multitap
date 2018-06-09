@@ -89,7 +89,7 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 				if (i == parent->CharIndex)
 					continue;
 
-				auto target = CharObj1Ptrs[i];
+				auto target = EntityData1Ptrs[i];
 
 				if (!target)
 					continue;
@@ -144,19 +144,19 @@ static void __cdecl Carry_Main(ObjectMaster* object)
 			target_data2->Speed = parent_data2->Speed;
 
 			// PhysicsData.YOff only seems to work on Sonic
-			switch ((Characters)target->CharID)
+			switch (static_cast<Characters>(target->CharID))
 			{
 				case Characters_Sonic:
-					target_data2->AnimThing.Animation = 47;
+					target_data2->AnimationThing.Index = 47;
 					target_data2->PhysicsData.YOff = 7.0f;
 					break;
 
 				case Characters_Knuckles:
-					target_data2->AnimThing.Animation = 84;
+					target_data2->AnimationThing.Index = 84;
 					break;
 
 				case Characters_Amy:
-					target_data2->AnimThing.Animation = 32;
+					target_data2->AnimationThing.Index = 32;
 					break;
 
 				default:

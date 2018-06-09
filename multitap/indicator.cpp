@@ -95,7 +95,7 @@ double GetAngle(const T& source, const T& target)
 
 static void DrawElement(Uint32 playerIndex, Uint32 textureIndex)
 {
-	EntityData1* player = CharObj1Ptrs[playerIndex];
+	EntityData1* player = EntityData1Ptrs[playerIndex];
 
 	if (player == nullptr)
 	{
@@ -162,8 +162,8 @@ static void DrawElement(Uint32 playerIndex, Uint32 textureIndex)
 		sp->tanim[arrow].cy = Indicator_TEXANIM[arrow].cy - (isVisible ? 0 : 12);
 	}
 	
-	SetMaterialAndSpriteColor(IsControllerEnabled((Uint8)playerIndex) ? &colors[charid] : &colors[9]);
-	Draw2DSprite(sp, textureIndex, -1.0f, flags, (QueuedModelFlagsB)0);
+	SetMaterialAndSpriteColor(IsControllerEnabled(static_cast<Uint8>(playerIndex)) ? &colors[charid] : &colors[9]);
+	njDrawSprite2D_Queue(sp, textureIndex, -1.0f, flags, static_cast<QueuedModelFlagsB>(0));
 }
 
 // TODO: Sub-objects for each player indicator
